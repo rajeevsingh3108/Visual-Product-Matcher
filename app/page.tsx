@@ -85,9 +85,115 @@ export default function Home() {
   }, [analysis, inferredColor, inferredCategory]);
 
   // --- handlers (same as before) ---
-  const handleAnalyze = async () => { /* unchanged */ };
-  const handleSearch = async () => { /* unchanged */ };
-  const saveToDb = async () => { /* unchanged */ };
+  const handleAnalyze = async () => {
+    if (!image) return;
+    setError(null);
+    setLoading(true);
+    setAnalyzing(true);
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Analyze failed');
+      setAnalysis(data.analysis);
+      setAnalyzed(true);
+    } catch (e: any) {
+      setError(e.message || 'Analyze failed');
+    } finally {
+      setAnalyzing(false);
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!image) return;
+    setLoading(true);
+    setSearching(true);
+    setSearched(false);
+    setError(null);
+    setResults([]);
+    setSaveMessage(null);
+    try {
+      // Use enhanced data if available, otherwise fall back to basic analysis
+      const enhancedData = analysis?.enhancedData;
+      const keywords: string[] = [];
+      const tags: string[] = enhancedData?.tags || analysis?.tags?.map((t: any) => t.name).slice(0, 10) || [];
+      const brands: string[] = enhancedData?.brand ? [enhancedData.brand] : analysis?.brands?.map((b: any) => b.name) || [];
+      const colors: string[] = enhancedData?.colors || analysis?.color?.dominantColors || [];
+      const cats: string[] = enhancedData?.category ? [enhancedData.category] : analysis?.categories?.map((c: any) => c.name) || [];
+      
+      keywords.push(...tags, ...brands, ...cats);
+      
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image,
+          keywords,
+          name: enhancedData?.name || inferredName,
+          category: enhancedData?.category || inferredCategory,
+          brand: enhancedData?.brand,
+          colors: colors,
+          limit: 20,
+        }),
+      });
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      setResults(data.results);
+    } catch (e: any) {
+      setError(e.message || 'Unknown error');
+    } finally {
+      setSearched(true);
+      setSearching(false);
+      setLoading(false);
+    }
+  };
+
+  const saveToDb = async () => {
+    if (!image) return;
+    setError(null);
+    setSaveMessage(null);
+    try {
+      const form = new FormData();
+      
+      // Use enhanced data if available, otherwise fall back to inferred data
+      const enhancedData = analysis?.enhancedData;
+      const name = enhancedData?.name || inferredName;
+      const category = enhancedData?.category || inferredCategory || 'Accessories';
+      const brand = enhancedData?.brand || '';
+      const description = enhancedData?.description || '';
+      const colors = enhancedData?.colors || [];
+      const tags = enhancedData?.tags || [];
+      
+      form.append('name', name);
+      form.append('category', category);
+      form.append('brand', brand);
+      form.append('description', description);
+      form.append('colors', colors.join(','));
+      form.append('tags', tags.join(','));
+      
+      if (image.startsWith('http')) {
+        form.append('imageUrl', image);
+      } else if (imageFile) {
+        form.append('imageFile', imageFile);
+      } else {
+        const resp = await fetch(image);
+        const blob = await resp.blob();
+        const file = new File([blob], 'upload.png', { type: blob.type || 'image/png' });
+        form.append('imageFile', file);
+      }
+      const res = await fetch('/api/products', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      setSaveMessage(`Saved as #${data.product._id}: ${data.product.name}`);
+    } catch (e: any) {
+      setError(e.message || 'Failed to save');
+    }
+  };
+
 
   const filteredResults = results.filter(r => r.similarity >= minScore);
 
