@@ -23,14 +23,14 @@ export default function Navbar() {
             <div>
               <h1 className="text-2xl font-extrabold leading-none tracking-tight">
                 <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#0f172a,#334155)] dark:bg-[linear-gradient(90deg,#e2e8f0,#94a3b8)]">
-                  Visual
+                  Visual Product
                 </span>
                 <span className="ml-1 bg-clip-text text-transparent bg-gradient-to-r from-rose-500 via-indigo-500 to-emerald-500">
-                  Match
+                  Matcher
                 </span>
               </h1>
               <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                Smart product discovery
+                Get your match
               </p>
             </div>
           </div>

@@ -4,7 +4,7 @@ A web application that helps users find visually similar products based on uploa
 
 ## 🚀 Live Demo & Source
 
-- **Live Demo:** [View Application](https://visual-product-matcher.vercel.app)
+- **Live Demo:** [View Application](https://visual-product-matcher-rajeev.vercel.app/)
 - **Source Code:** [GitHub Repository](https://github.com/rajeevsingh3108/Visual-Product-Matcher)
 
 ## ✨ Features
@@ -81,7 +81,7 @@ Uploaded images are analyzed (file or URL) to extract metadata such as category,
 5. Click **Deploy**.
 
 Once deployed, you’ll get a live URL like:  
-`https://visual-product-matcher.vercel.app`
+`https://visual-product-matcher-rajeev.vercel.app/`
 
 ## 🔒 Evaluation Criteria
 
